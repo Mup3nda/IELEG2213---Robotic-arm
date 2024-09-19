@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 from mpl_toolkits.mplot3d import Axes3D
 
+from IK_class import IKHandler
+
 
 ##################################################
 #                   2D arm 
@@ -160,20 +162,27 @@ O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(0.0)])
 goal = np.array([20, -20, 0])
 print(f"total length: {np.linalg.norm(goal)}")
 
-jacobianIK(O, goal)
+ik = IKHandler(O)
+ik.IK(goal)
+ik.showPlot(goal)
 
-startPos = armKin(O)
-pos = ForwardKin(O)
+# jacobianIK(O, goal)
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+# startPos = armKin(O)
+# pos = ForwardKin(O)
 
-ax.plot(goal[0], goal[1], goal[2], "ro-")
-ax.plot([0, startPos[0]], [0, startPos[1]], [0, startPos[2]], "go-")
-ax.plot([startPos[0], pos[0]], [startPos[1], pos[1]], [startPos[2], pos[2]], "bo-")
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
 
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-set_equal_aspect_3d(ax)
-plt.show()
+# ax.plot(goal[0], goal[1], goal[2], "ro-")
+# ax.plot([0, startPos[0]], [0, startPos[1]], [0, startPos[2]], "go-")
+# ax.plot([startPos[0], pos[0]], [startPos[1], pos[1]], [startPos[2], pos[2]], "bo-")
+
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+# set_equal_aspect_3d(ax)
+# plt.show()
+
+
+#new O: [ 2.35617491 -0.28646271 -2.85157423]
