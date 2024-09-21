@@ -1,36 +1,38 @@
-import cv2
-import time
+import jetson.inference
+import jetson.utils
 
-# Use GStreamer pipeline for CSI camera
-gstreamer_pipeline = (
-    "nvarguscamerasrc ! "
-    "video/x-raw(memory:NVMM), width=1280, height=720, format=(string)NV12, framerate=30/1 ! "
-    "nvvidconv flip-method=2 ! "
-    "video/x-raw, width=1280, height=720, format=(string)BGRx ! "
-    "videoconvert ! "
-    "video/x-raw, format=(string)BGR ! appsink"
-)
+# Initialize the detection network
+net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
 
-camera = cv2.VideoCapture(gstreamer_pipeline, cv2.CAP_GSTREAMER)
+# Initialize the camera and display
+camera = jetson.utils.videoSource("csi://0")  # Use CSI camera source
+display = jetson.utils.videoOutput()
+font = jetson.utils.cudaFont()
 
-if not camera.isOpened():
-    print("Error: Could not open camera.")
-    exit()
-
-# Add a delay to ensure the camera is ready
-time.sleep(2)
+# Class ID for "mobile" (verify this ID based on your model)
+MOBILE_CLASS_ID = 77 #84 for book
 
 while True:
-    ret, frame = camera.read()
-    if not ret:
-        print("Failed to grab frame")
-        break
+    # Capture the image
+    img = camera.Capture()
+    
+    # Detect objects in the image
+    detections = net.Detect(img)
+    
+    for detection in detections:
+        if detection.ClassID == MOBILE_CLASS_ID:
+            center_x = int(detection.Center[0])
+            center_y = int(detection.Center[1])
+            jetson.utils.cudaDrawCircle(img, (center_x, center_y), 8, (255, 0, 0, 200))
+            text = f"Target's coordinates: (x={center_x},y={center_y})"
+            font.OverlayText(img, img.width, img.height, text, 5,5, font.White, font.Gray80)
+            print(text)
+    
+    # Render the image
+    display.Render(img)
+    
+    # Update the display status
+    display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
+    
 
-    cv2.imshow("Camera Test", frame)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-camera.release()
-cv2.destroyAllWindows()
 

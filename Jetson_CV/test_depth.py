@@ -2,32 +2,28 @@ import jetson.inference
 import jetson.utils
 
 # Initialize the detection network
-net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
+net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.6)
 
 # Initialize the camera and display
 camera = jetson.utils.videoSource("csi://0")  # Use CSI camera source
-display = jetson.utils.videoOutput("display://0", argv=["--weight=640", "--height=480"])
+# display = jetson.utils.videoOutput("display://0", argv=["--weight=1280", "--height=720"])
+display = jetson.utils.videoOutput("display://0")
 font = jetson.utils.cudaFont()
 
 # Constants for distance calculation
-KNOWN_DISTANCE = 32  # centimeter
-KNOWN_WIDTH = 6  # for mouse
-MOBILE_CLASS_ID = 77  # Adjust the class ID as per your need
-MOUSE_CLASS_ID = 74
-
-# Function to calculate the focal length
-# Width in image: 372
-# Focal lenght: 2400
-def focal_length(measured_distance, real_width, width_in_image):
-    return (width_in_image * measured_distance) / real_width
-
-# Function to estimate distance based on detected object width
-def distance_finder(focal_length, real_width, width_in_image):
-    return (real_width * focal_length) / width_in_image
+KNOWN_DISTANCE = 36  # centimeter
+KNOWN_WIDTH_OBJECT = 6.5  # for mouse
+KNOWN_HEIGHT_OBJECT = 10  # for mouse
+MOUSE_CLASS_ID = 74  # Adjust the class ID as per your need
 
 # Pre-calculate the focal length using a reference image width
-# Here, we assume you already have this calculated. Replace with actual values.
-focal_length_found = 2400 #615  # Use a pre-measured value
+focal_length_found = 2200 #2400  # Pre-measured focal length
+
+def distance_finder(focal_length, known_width_OBJECT, width_in_image):
+    return round(((known_width_OBJECT * focal_length) / width_in_image),2)
+
+def focal_length(measured_distance, real_width, width_in_image):
+    return (width_in_image * measured_distance) / real_width
 
 while True:
     # Capture the image from the camera
@@ -41,20 +37,25 @@ while True:
             # Get the center and width of the detected object
             center_x = int(detection.Center[0])
             center_y = int(detection.Center[1])
-            width_in_image = detection.Width  # Width of the detected object
+            width_object_cm = detection.Width / KNOWN_WIDTH_OBJECT  # Width of the detected object
+            height_object_cm = detection.Height / KNOWN_HEIGHT_OBJECT
+            width_object_pixels = detection.Width
             
+            # Convert x and y coordinates from pixels to cm
+            x_cm = round(center_x / width_object_cm, 2)
+            y_cm = round(center_y / height_object_cm, 2)
+
+            #focal_length_found = focal_length(KNOWN_DISTANCE, KNOWN_WIDTH_OBJECT, width_object_pixels)
             # Calculate the distance
-            #focal_length_found = focal_length(KNOWN_DISTANCE, KNOWN_WIDTH, width_in_image)
-            distance = distance_finder(focal_length_found, KNOWN_WIDTH, width_in_image)
+            distance = distance_finder(focal_length_found, KNOWN_WIDTH_OBJECT, width_object_pixels)
             
             # Draw a circle at the object's center
             jetson.utils.cudaDrawCircle(img, (center_x, center_y), 8, (255, 0, 0, 200))
             
-            # Display the distance on the image
-            text = f"Distance: {round(distance, 2)} cm (x={center_x},y={center_y})"
+            # Display the distance and coordinates on the image
+            text = f"Coordinates: x={x_cm} cm, y={y_cm} cm, z={distance} cm"
             font.OverlayText(img, img.width, img.height, text, 5, 5, font.White, font.Gray80)
             print(text)
-            print(f"Width in image: {width_in_image}")
             print(f"Focal lenght: {focal_length_found}")
     
     # Render the image with the annotations
@@ -62,4 +63,3 @@ while True:
     
     # Update display status with FPS
     display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
-
