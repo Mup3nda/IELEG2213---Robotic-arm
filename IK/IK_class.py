@@ -36,16 +36,17 @@ class IKHandler:
         while(np.linalg.norm(endEffectorPos - targetPos) > 0.5): 
             dO = self.getDeltaOrientation(targetPos)
             self.O += dO * 0.01 / np.linalg.norm(dO)
-            print(f"new O: {self.O}")
+            # print(f"new O: {self.O}")
             endEffectorPos = self.FK()
 
     def getDeltaOrientation(self, targetPos): 
-        Jt = np.linalg.pinv(self.getJacobianTranspose())
+        Jt = self.getJacobianTranspose()
+        # If i transpose then inverse it then i get ok answer...
         endEffectorPos = self.FK()
         V = targetPos - endEffectorPos
         dO = Jt @ V 
         return dO
-
+# TODO finding the correct answer? 
     def getJacobianTranspose(self):
         startPos = np.array([0, 0, 0])  # Base is at the origin
         endPos = self.FK()  # End effector position
@@ -59,7 +60,8 @@ class IKHandler:
         J_C = np.cross(polarForearmAxis, endPos - self.FK(0))  
         
         J = np.vstack((J_A, J_B, J_C))
-        return J.T
+        print(f"J_A: {J_A} og J: {J}")
+        return J
 
     def setAspectRatio(self, ax):
         extents = np.array([ax.get_xlim3d(), ax.get_ylim3d(), ax.get_zlim3d()])
