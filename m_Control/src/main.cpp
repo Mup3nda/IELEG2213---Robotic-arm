@@ -66,65 +66,26 @@
 
 
 
-#include <Arduino.h>
-#include <WiFi.h>
-#include <WebSocketsClient.h>
-#include <ArduinoJson.h>
-#include <Wire.h> // Include Wire library for I2C communication
+#include <Websocket.h>
 
 // Replace with your network credentials
 const char* ssid = "ABS-Link";
 const char* password = "ABS_2023";
 
 // WebSocket server details
-const char* websockets_server_host = "192.168.0.178";
-const uint16_t websockets_server_port = 9000; // Replace with your server port
-unsigned long previousMillis = 0;
-const long interval = 5000; 
+const char* server = "192.168.0.178";
+const uint16_t port = 9000; // Replace with your server port
 
-WebSocketsClient webSocket;
-
-void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
-    Serial.println("Came here"); 
-    switch(type) {
-        case WStype_DISCONNECTED:
-            Serial.println("Disconnected!");
-            break;
-        case WStype_CONNECTED:
-            Serial.println("Connected to WebSocket server");
-            break;
-        case WStype_TEXT: {
-            Serial.print("Received message: ");
-            Serial.println((char*)payload);
-            break;
-        }
-        case WStype_BIN:
-            Serial.println("Received binary data");
-            break;
-    }
-}
+Websocket* ws = new Websocket(ssid, password, server, port);  
 
 void setup() {
     Serial.begin(115200);
-
-    // Connect to Wi-Fi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("Connecting to WiFi...");
-    }
-    Serial.println("Connected to WiFi");
-
-    // Connect to WebSocket server
-    webSocket.begin(websockets_server_host, websockets_server_port);
-    webSocket.onEvent(webSocketEvent);
-
-    Serial.println("Connecting to WebSocket server...");
+    ws->begin();
 }
 
 void loop() {
     // Keep the connection alive
-    webSocket.loop();
+    ws->loop();
 
     // unsigned long currentMillis = millis();
     // if (currentMillis - previousMillis >= interval) {
