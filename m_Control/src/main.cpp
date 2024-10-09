@@ -73,17 +73,19 @@
 #include <Wire.h> // Include Wire library for I2C communication
 
 // Replace with your network credentials
-const char* ssid = "your_SSID";
-const char* password = "your_PASSWORD";
+const char* ssid = "ABS-Link";
+const char* password = "ABS_2023";
 
 // WebSocket server details
-const char* websockets_server_host = "your.websocket.server";
-const uint16_t websockets_server_port = 80; // Replace with your server port
-const char* websockets_server_url = "/path"; // Replace with your server path
+const char* websockets_server_host = "192.168.0.178";
+const uint16_t websockets_server_port = 9000; // Replace with your server port
+unsigned long previousMillis = 0;
+const long interval = 5000; 
 
 WebSocketsClient webSocket;
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+    Serial.println("Came here"); 
     switch(type) {
         case WStype_DISCONNECTED:
             Serial.println("Disconnected!");
@@ -114,7 +116,7 @@ void setup() {
     Serial.println("Connected to WiFi");
 
     // Connect to WebSocket server
-    webSocket.begin(websockets_server_host, websockets_server_port, websockets_server_url);
+    webSocket.begin(websockets_server_host, websockets_server_port);
     webSocket.onEvent(webSocketEvent);
 
     Serial.println("Connecting to WebSocket server...");
@@ -123,4 +125,11 @@ void setup() {
 void loop() {
     // Keep the connection alive
     webSocket.loop();
+
+    // unsigned long currentMillis = millis();
+    // if (currentMillis - previousMillis >= interval) {
+    //     previousMillis = currentMillis;
+    //     Serial.println("Sending message to server...");
+    //     webSocket.sendTXT("Hello from Arduino!");
+    // }
 }

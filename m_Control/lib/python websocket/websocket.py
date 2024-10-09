@@ -1,36 +1,27 @@
 import asyncio
-from websockets import serve
+import websockets
 
-# Set to store connected clients
 connected_clients = set()
 
-async def echo(websocket, path):
-    # Register client
+async def handler(websocket, path):
+    # Register the new client
     connected_clients.add(websocket)
     try:
+        # Listen for messages from clients
         async for message in websocket:
-            # Echo the received message back to the client
-            await websocket.send(message)
+            print(f"Received message: {message}")
+            # Send the message to all connected clients (including Arduino)
+            for client in connected_clients:
+                await client.send(message)
+    except websockets.exceptions.ConnectionClosed:
+        print("Client disconnected")
     finally:
-        # Unregister client
+        # Unregister the client when it disconnects
         connected_clients.remove(websocket)
 
-async def broadcast_message(message):
-    # Send a message to all connected clients
-    if connected_clients:  # Check if there are any connected clients
-        await asyncio.wait([client.send(message) for client in connected_clients])
-
 async def main():
-    async with serve(echo, "10.24.106.132", 8765):
-        await asyncio.get_running_loop().create_future()  # run forever
+    async with websockets.serve(handler, "192.168.0.178", 9000) as server:
+        print("WebSocket server started on port 9000")
+        await asyncio.get_running_loop().create_future()
 
-# Start the WebSocket server
 asyncio.run(main())
-
-# Example usage: Broadcast a message to all clients after 10 seconds
-async def example_broadcast():
-    await asyncio.sleep(10)
-    await broadcast_message("Hello, clients!")
-
-# Run the example broadcast in the event loop
-asyncio.run(example_broadcast())
