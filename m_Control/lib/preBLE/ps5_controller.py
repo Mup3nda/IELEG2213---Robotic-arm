@@ -1,7 +1,7 @@
 import asyncio
 from inputs import get_gamepad
 from bleak import BleakClient
-from esp32_ble_control import send_command_to_esp32
+from m_Control.lib.preBLE.esp32_ble_control import send_command_to_esp32
 
 # Replace with the actual address of your PS5 controller
 ps5_controller_address = "7C:66:EF:83:DC:22"
