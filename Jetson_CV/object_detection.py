@@ -14,6 +14,7 @@ font = jetson.utils.cudaFont()
 # Constants for distance calculation
 KNOWN_DISTANCE = 36  # centimeter
 KNOWN_WIDTH_OBJECT = 6.5  # for mouse
+KNOWN_HEIGHT = 3.5 # for mouse
 MOUSE_CLASS_ID = 74  # Adjust the class ID as per your need
 focal_length_found = 2200  # Pre-measured focal length
 
@@ -23,6 +24,7 @@ last_x, last_y, last_distance = [], [], []
 
 # Function for distance calculation without decimal values
 def distance_finder(focal_length, known_width_OBJECT, width_in_image):
+    
     return round((known_width_OBJECT * focal_length) / width_in_image)
 
 # Moving average helper function without decimals
@@ -63,8 +65,8 @@ async def send_data():
                     last_distance.append(distance)
                     
                     # Maintain list size for moving average
-                    if len(last_x) > MAX_MEASUREMENTS:
-                        last_x.pop(0)
+                    if len(last_x) > MAX_MEASUREMENTS: # Only need for one of the variable (x,y,z)
+                        last_x.pop(0) 
                         last_y.pop(0)
                         last_distance.pop(0)
                     

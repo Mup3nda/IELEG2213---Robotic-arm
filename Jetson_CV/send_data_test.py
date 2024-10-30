@@ -7,9 +7,12 @@ async def send_coordinates():
     uri = "ws://192.168.0.135:9000" # ABS
     async with websockets.connect(uri) as websocket:
         while True:
-            x = random.randint(0, 100)
-            y = random.randint(0, 100)
-            z = random.randint(0, 100)
+            # x = random.randint(0, 100)
+            # y = random.randint(0, 100)
+            # z = random.randint(0, 100)
+            x = 20
+            y = 0
+            z = 30
             data = f"{x},{y},{z}"
             await websocket.send(data)
             await asyncio.sleep(1)

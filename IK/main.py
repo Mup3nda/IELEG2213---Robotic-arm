@@ -4,6 +4,8 @@ from matplotlib.widgets import Slider
 from mpl_toolkits.mplot3d import Axes3D
 
 from IK_class import IKHandler
+import asyncio
+import websockets
 
 
 ##################################################
@@ -160,11 +162,16 @@ def set_equal_aspect_3d(ax):
 ##################################################
 O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(0.0)])
 goal = np.array([20, 0, 30])
+
 print(f"total length: {np.linalg.norm(goal)}")
 
+
+
+
 ik = IKHandler(O)
-ik.IK(goal)
-ik.showPlot(goal)
+# ik.IK(goal)
+# ik.showPlot(goal)
+asyncio.run(ik.getCVdata())
 
 # jacobianIK(O, goal)
 

@@ -3,10 +3,40 @@ from const import *
 import matplotlib.pyplot as plt 
 from matplotlib.widgets import Slider
 from mpl_toolkits.mplot3d import Axes3D
+import asyncio
+import websockets
 
 class IKHandler: 
     def __init__(self, O):
         self.O = O
+        self.x = None
+        self.y = None
+        self.z = None
+    
+    async def getCVdata(self, uri = "ws://192.168.0.135:9000"):
+        async with websockets.connect(uri) as websocket:
+            print("Connected to WebSocket server for receiving coordinates.")
+            while True:
+                # Receive data from the WebSocket server
+                data = await websocket.recv()
+                
+                # Parse incoming data into x, y, z coordinates
+                try:
+                    x_str, y_str, z_str = data.split(',')
+                    self.x = int(x_str)
+                    self.y = int(y_str)
+                    self.z = int(z_str)
+                    print(f"Received coordinates: x={self.x}, y={self.y}, z={self.z}")
+
+                    goal_pos = np.array([self.x, self.y, self.z])
+                    self.IK(goal_pos)
+                    self.showPlot(goal_pos)
+                
+                except ValueError:
+                    print(f"Received invalid data: {data}")
+
+                # Optional: Add a short delay if needed
+                await asyncio.sleep(0.1)
 
 
     def FK(self, section=1):
@@ -60,7 +90,7 @@ class IKHandler:
         J_C = np.cross(polarForearmAxis, endPos - self.FK(0))  
         
         J = np.vstack((J_A, J_B, J_C))
-        print(f"J_A: {J_A} og J: {J}")
+        #print(f"J_A: {J_A} og J: {J}")
         return J
 
     def setAspectRatio(self, ax):
@@ -88,3 +118,4 @@ class IKHandler:
         ax.set_zlabel('Z')
         self.setAspectRatio(ax)
         plt.show()
+        print(f"x : {self.x}, y: {self.y}, z: {self.z}")
