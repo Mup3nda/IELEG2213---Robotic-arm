@@ -10,6 +10,7 @@ public:
     ~ServoHandler();
     void setupServos();
     void servoMove(std::vector<int> &stepVector);
+    void servoMoveModded(std::vector<int> &stepVector);
     void servoSetPosition(std::vector<int> &wantedPos, char debug[]);
     static const int SERVO_DELAY = 1000; // Delay in milliseconds
     void test(); 

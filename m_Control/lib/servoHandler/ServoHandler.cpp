@@ -78,6 +78,27 @@ void ServoHandler::servoMove(std::vector<int> &stepVector) {
     }
 }
 
+void ServoHandler::servoMoveModded(std::vector<int> &stepVector) {
+    std::vector<int> newTargetPosition = checkParams(stepVector);
+
+    for(auto &e : stepVector) {
+        Serial.println(e); 
+    }
+    
+    for (int i = 0; i < SERVOS; i++) {
+        if (stepVector[i] == 1) {
+            servoPositions[i] += 2;  
+        } else if (stepVector[i] == -1) {
+            servoPositions[i] -= 2;  
+        }
+
+        servoPositions[i] = constrain(servoPositions[i], 0, 180);
+
+        int pulseWidth = degreesToPulseWidth(servoPositions[i]);
+        pwm->setPWM(servoPins[i], 0, pulseWidth);
+    }
+}
+
 void ServoHandler::test() {
     for(int i=0; i<8; i++)
       { pwm->setPWM(i, 0, degreesToPulseWidth(0) );}
