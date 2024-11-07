@@ -11,18 +11,17 @@ public:
     void setupServos();
     void robotPickUp();
     void servoMove(std::vector<int> &stepVector);
-<<<<<<< HEAD
     void servoMove2(std::vector<int> &stepVector);
+    void servoMoveModded(std::vector<int> &stepVector);
     void servoSetPosition(std::vector<int> &wantedPos, const char* debug = "");
     void servoLoop();
     void updateCurrentVector(const std::vector<int>& newVector);
     void servoJoints(int from, int to, const std::vector<int> &choosenServos); // Add this line
-=======
-    void servoMoveModded(std::vector<int> &stepVector);
-    void servoSetPosition(std::vector<int> &wantedPos, char debug[]);
->>>>>>> ee3e4993753f1d0593e8e82a0a65fceef2a090b1
     static const int SERVO_DELAY = 1000; // Delay in milliseconds
     void test(); 
+
+    // void servoMoveModded(std::vector<int> &stepVector);
+    // void servoSetPosition(std::vector<int> &wantedPos, char debug[]);
 
 private:
     Adafruit_PWMServoDriver* pwm;
