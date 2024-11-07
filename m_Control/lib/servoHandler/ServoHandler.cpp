@@ -131,7 +131,11 @@ void ServoHandler::servoMove(std::vector<int> &stepVector) {
     }
 }
 
+<<<<<<< HEAD
 void ServoHandler::servoMove2(std::vector<int> &stepVector) {
+=======
+void ServoHandler::servoMoveModded(std::vector<int> &stepVector) {
+>>>>>>> ee3e4993753f1d0593e8e82a0a65fceef2a090b1
     std::vector<int> newTargetPosition = checkParams(stepVector);
 
     for(auto &e : stepVector) {
@@ -139,6 +143,7 @@ void ServoHandler::servoMove2(std::vector<int> &stepVector) {
     }
     
     for (int i = 0; i < SERVOS; i++) {
+<<<<<<< HEAD
         // Move the servo one degree toward the target
         if (stepVector[i] == 1) {
             servoPositions[i] += 4;  // Increase angle by 1 degree
@@ -150,11 +155,22 @@ void ServoHandler::servoMove2(std::vector<int> &stepVector) {
         servoPositions[i] = constrain(servoPositions[i], 0, 180);
 
         // Map the new position to PWM pulse width and move the servo
+=======
+        if (stepVector[i] == 1) {
+            servoPositions[i] += 2;  
+        } else if (stepVector[i] == -1) {
+            servoPositions[i] -= 2;  
+        }
+
+        servoPositions[i] = constrain(servoPositions[i], 0, 180);
+
+>>>>>>> ee3e4993753f1d0593e8e82a0a65fceef2a090b1
         int pulseWidth = degreesToPulseWidth(servoPositions[i]);
         pwm->setPWM(servoPins[i], 0, pulseWidth);
     }
 }
 
+<<<<<<< HEAD
 
 void ServoHandler::servoLoop() {
     Serial.println("Inside servoLoop...");
@@ -184,6 +200,8 @@ void ServoHandler::servoLoop() {
     delay(100);
 }
 
+=======
+>>>>>>> ee3e4993753f1d0593e8e82a0a65fceef2a090b1
 void ServoHandler::test() {
     for(int i=0; i<8; i++)
       { pwm->setPWM(i, 0, degreesToPulseWidth(0) );}
