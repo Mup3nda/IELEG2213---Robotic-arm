@@ -232,14 +232,14 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
     for (int i = 0; i < SERVOS; i++) {
         pulseWidthPositions[i] = degreesToPulseWidth(wantedPos[i]);
     }
-    Serial.print("pulswidth pos:");
-    for(auto& i: pulseWidthPositions) {
-        Serial.print(i);    Serial.print(" "); 
-    }
-    Serial.println("");
-    Serial.println("Stage7");
+    // Serial.print("pulswidth pos:");
+    // for(auto& i: pulseWidthPositions) {
+    //     Serial.print(i);    Serial.print(" "); 
+    // }
+    // Serial.println("");
+    // Serial.println("Stage7");
 
-    Serial.println("Came here");
+    // Serial.println("Came here");
     while (!allReached) {
         allReached = true;
         
@@ -254,10 +254,10 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
                 stepVector[i] = 0;
             }
         }
-        Serial.print("Steper values: ");
-        for(auto& element : stepVector) {
-            Serial.print(element); Serial.print(" "); 
-        }
+        // Serial.print("Steper values: ");
+        // for(auto& element : stepVector) {
+        //     Serial.print(element); Serial.print(" "); 
+        // }
         Serial.println();
 
         servoMove(stepVector); // move towards the goal 

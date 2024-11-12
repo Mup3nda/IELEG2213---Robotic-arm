@@ -26,11 +26,17 @@ public:
 
 private:
     Adafruit_PWMServoDriver* pwm;
+<<<<<<< HEAD
+    static const int SERVOS = 3;
+    static const int SERVO_MIN = 100; // 0 degree 
+    static const int SERVO_MAX = 660; //  180 degree
+=======
     static const int SERVOS = 5; // Update to 5 servos
     static const int SERVO_MIN = 125; // 1ms -> 0 degree 
     static const int SERVO_MAX = 625; // 2ms -> 180 degree
+>>>>>>> 83a8446160007dae216aadef968ed2e09104bc7a
     unsigned long previousTime = 0; 
-    unsigned long interval = 15; 
+    unsigned long interval = 20; 
 
     const int servoMinMax[5][2]; // Update to handle 5 servos
     std::vector<int> servoPins;

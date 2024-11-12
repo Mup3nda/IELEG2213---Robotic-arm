@@ -1,1 +1,2 @@
-192.168.0.178
+
+    connected_clients.add(websocket)

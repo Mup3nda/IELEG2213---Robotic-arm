@@ -28,25 +28,35 @@ void Websocket::begin() {
     });
 }
 
-void Websocket::EventHandler(WStype_t type, uint8_t * payload, size_t length) {
-    switch(type) {
-        case WStype_DISCONNECTED:
-            Serial.println("Disconnected!");
-            break;
-        case WStype_CONNECTED:
-            Serial.println("Connected to WebSocket server");
-            break;
-        case WStype_TEXT: {
-            Serial.print("Received message: ");
-            Serial.println((char*)payload);
-            break;
+void Websocket::EventHandler(WStype_t type, uint8_t * payload,  size_t length) {
+     if(this->callback) {
+        // Call the user-defined callback directly with the event information
+        this->callback(type, payload, length);
+    } else {
+        // Fallback to default behavior if no callback is set
+        switch(type) {
+            case WStype_DISCONNECTED:
+                Serial.println("Disconnected!");
+                break;
+            case WStype_CONNECTED:
+                Serial.println("Connected to WebSocket server");
+                break;
+            case WStype_TEXT: {
+                Serial.print("Received message: ");
+                Serial.println((char*)payload);
+                break;
+            }
+            case WStype_BIN:
+                Serial.println("Received binary data");
+                break;
         }
-        case WStype_BIN:
-            Serial.println("Received binary data");
-            break;
-    } 
+    }
 }
 
 void Websocket::loop() {
     ws->loop();
+}
+
+void Websocket::setCallback(std::function<void(WStype_t, uint8_t*, size_t)> callback) {
+    this->callback = callback; 
 }
