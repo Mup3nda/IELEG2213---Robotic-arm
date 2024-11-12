@@ -17,10 +17,10 @@ public:
 private:
     Adafruit_PWMServoDriver* pwm;
     static const int SERVOS = 3;
-    static const int SERVO_MIN = 125; // 1ms -> 0 degree 
-    static const int SERVO_MAX = 625; // 2ms -> 180 degree
+    static const int SERVO_MIN = 100; // 0 degree 
+    static const int SERVO_MAX = 660; //  180 degree
     unsigned long previousTime = 0; 
-    unsigned long interval = 15; 
+    unsigned long interval = 20; 
 
     
 
