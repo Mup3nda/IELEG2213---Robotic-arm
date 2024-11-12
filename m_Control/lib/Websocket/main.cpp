@@ -63,9 +63,12 @@
 //   // Nothing to do here, everything is handled in the callback
 // }
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 83a8446160007dae216aadef968ed2e09104bc7a
 #include <Websocket.h>
 
 // Replace with your network credentials
