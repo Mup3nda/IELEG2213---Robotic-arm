@@ -10,6 +10,7 @@ async def handler(websocket, path):
         # Listen for messages from clients
         async for message in websocket:
             print(f"Received message: {message}")
+            print(message[-1])
             # Send the message to all connected clients (including Arduino)
             for client in connected_clients:
                 await client.send(message)
@@ -20,8 +21,8 @@ async def handler(websocket, path):
         connected_clients.remove(websocket)
 
 async def main():
-    async with websockets.serve(handler, "192.168.0.135", 9000) as server: #Didier ABS
-    #async with websockets.serve(handler, "192.168.0.178", 9000) as server: #Abdi?
+    #async with websockets.serve(handler, "192.168.0.135", 9000) as server: #Didier ABS
+    async with websockets.serve(handler, "192.168.0.178", 9000) as server: #Abdi
         print("WebSocket server started on port 9000")
         await asyncio.get_running_loop().create_future()
 

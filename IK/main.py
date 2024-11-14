@@ -162,12 +162,10 @@ def set_equal_aspect_3d(ax):
 ##################################################
 
 O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(0.0)])
-goal = np.array([10, 10, 20])
+goal = np.array([10, 10, 30])
 print(f"total length: {np.linalg.norm(goal)}")
 
-
-
-
 ik = IKHandler(O)
-ik.IK(goal)
-ik.showPlot(goal)
+asyncio.run(ik.getCVdata("ws://192.168.0.178:9000"))
+# ik.IK(goal)
+# asyncio.run(ik.showPlot(goal))

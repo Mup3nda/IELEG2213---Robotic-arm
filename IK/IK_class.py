@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import websockets
 import json
 import asyncio
+import time 
 
 class IKHandler: 
     def __init__(self, O):
@@ -18,6 +19,7 @@ class IKHandler:
             while True:
                 # Receive data from the WebSocket server
                 data = await websocket.recv()
+                print(data)
                 
                 # Parse incoming data into x, y, z coordinates
                 try:
@@ -27,9 +29,9 @@ class IKHandler:
                     self.z = int(z_str)
                     print(f"Received coordinates: x={self.x}, y={self.y}, z={self.z}")
 
-                    goal_pos = np.array([self.x, self.y, self.z])
+                    goal_pos = np.array([self.x, self.y, self.z-45])
                     self.IK(goal_pos)
-                    self.showPlot(goal_pos)
+                    await self.showPlot(goal_pos)
                 
                 except ValueError:
                     print(f"Received invalid data: {data}")
@@ -60,7 +62,7 @@ class IKHandler:
         - targetPos = The goal coordinates
         """
         endEffectorPos = self.FK()
-        max_iterations = 5000  # Limit the number of iterations
+        max_iterations = 20000  # Limit the number of iterations
         iteration = 0
         max_step = np.deg2rad(5)  # Limit max step size to 5 degrees
         epsilon = 1e-6  # Small buffer to avoid exact 0 or pi
@@ -123,7 +125,7 @@ class IKHandler:
         J_C = np.cross(polarForearmAxis, endPos - self.FK(0))  
         
         J = np.vstack((J_A, J_B, J_C))
-        print(f"J_A: {J_A} og J: {J}")
+        #print(f"J_A: {J_A} og J: {J}")
         return J # if you don't transpose then check comment
 
     def setAspectRatio(self, ax):
@@ -135,7 +137,7 @@ class IKHandler:
         ax.set_ylim3d([centers[1] - max_range, centers[1] + max_range])
         ax.set_zlim3d([centers[2] - max_range, centers[2] + max_range])
     
-    def showPlot(self, targetPos): 
+    async def showPlot(self, targetPos): 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         
@@ -151,10 +153,14 @@ class IKHandler:
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
         self.setAspectRatio(ax)
-        asyncio.run(self.send("ws://192.168.0.178:9000", targetPos))
+        print(f"Endposition: x: {endPos[0]}, y: {endPos[1]}, z: {endPos[2]}")
+        await self.send("ws://192.168.0.178:9000", targetPos)
         plt.show()
-
-   
+        
+        # Reset position
+        await asyncio.sleep(2)
+        self.O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(0.0)])
+        await self.send("ws://192.168.0.178:9000", targetPos)
     
     async def send(self, ws, targetPos): 
         convertedO = self.O.copy()  

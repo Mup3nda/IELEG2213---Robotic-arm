@@ -25,5 +25,4 @@ class Websocket {
         void setCallback(std::function<void(WStype_t, uint8_t*, size_t)> callback);
         void loop(); 
 }; 
-
-#endif WEBSOCKET_H
+#endif
