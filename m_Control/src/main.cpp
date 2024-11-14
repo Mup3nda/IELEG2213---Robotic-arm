@@ -2,7 +2,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "ServoHandler.h"
 
-const int defaultPos[5] = {180, 180, 180, 90, 120};
+const int defaultPos[5] = {180, 180, 90, 0, 0};
 
 
 ServoHandler* servoHandler = new ServoHandler(defaultPos);
@@ -17,20 +17,34 @@ void setup() {
 
 void loop() {
     Serial.println("\n\n\n STARTE \n\n\n");
-    servoHandler->robotPickUp();
+    // servoHandler->robotPickUp();
 
+    // TEST CLAWS
+    std::vector<int> open = {180, 180, 90, 90, 90};
+    servoHandler->servoSetPosition(open, "Rotate to object position");
+    delay(1000);
+    Serial.println("\n\nCounter Clockwise\n\n");
 
+    std::vector<int> close = {180, 180, 90, 190, 95};
+    servoHandler->servoSetPosition(close, "Rotate to object position");
+    delay(1000);
+    Serial.println("\n\nClockwise\n\n");
 
-    // // TEST CLAWS
-    // std::vector<int> open = {180, 180, 180, 90, 180};
-    // servoHandler->servoSetPosition(open, "Rotate to object position");
-    // delay(500);
+    std::vector<int> stop = {180, 180, 90, 180, 90};
+    servoHandler->servoSetPosition(stop, "Rotate to object position");
+    delay(1000);
+    Serial.println("\n\nCounter Clockwise\n\n");
 
-    // std::vector<int> close = {180, 180, 180, 90, 90};
+    // TEST CLAWS
+    std::vector<int> back = {180, 180, 90, 10, 85};
+    servoHandler->servoSetPosition(back, "Rotate to object position");
+    delay(1000);
+    Serial.println("\n\nBack\n\n");
+
+    // std::vector<int> close = {180, 180, 90, 180, 80};
     // servoHandler->servoSetPosition(close, "Rotate to object position");
     // delay(500);
-
-
+    // Serial.println("\n\nTEST END\n\n");
 
     // Move servos to maximum positions
     // Serial.println("\nStage1");
