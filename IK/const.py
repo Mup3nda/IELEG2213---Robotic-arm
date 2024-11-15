@@ -4,8 +4,10 @@
 #
 #   Abdirahman Ahmed Yusuf 
 ############################################################
-BASE_HEIGHT = 30 
-ARM_LENGHT = 50
-FOREARM_LENGHT = 50 
+BASE_HEIGHT = 10
+
+ARM_LENGHT = 14
+
+FOREARM_LENGHT = 12
 
 limbs = [ARM_LENGHT, FOREARM_LENGHT]
