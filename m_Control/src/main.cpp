@@ -1,49 +1,32 @@
 #include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
-#include "ServoHandler.h"
-<<<<<<< HEAD
 #include <Websocket.h>
 #include <ArduinoJson.h>
+#include "ServoHandler.h"
 
-/* Kinematics */
+/* Servo */
 const int defaultPos[3] = {0, 180, 0};
-// std::vector<int> pos = {180, 180, 180};
+ServoHandler* servoHandler = new ServoHandler(defaultPos);
 
 /* Websocket */
 const char* ssid = "ABS-Link";
 const char* password = "ABS_2023";
 const char* server = "192.168.0.178";
-const uint16_t port = 9000;
-void event(WStype_t type, uint8_t* payload, size_t length); 
-
-
-ServoHandler* servoHandler = new ServoHandler(defaultPos);
+const uint16_t port = 9000; 
+void event(WStype_t type, uint8_t* payload, size_t length);  
 Websocket* ws = new Websocket(ssid, password, server, port);
-=======
-
-const int defaultPos[5] = {180, 180, 180, 90, 120};
-
-
-ServoHandler* servoHandler = new ServoHandler(defaultPos);
->>>>>>> 83a8446160007dae216aadef968ed2e09104bc7a
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("Alternate Servo Test");
+    Serial.println("Setting up...");
     servoHandler->setupServos();
-<<<<<<< HEAD
     ws->begin();
-    ws->setCallback(event);
+    ws->setCallback(event); 
+    Serial.println("Setup complete!"); 
 }
 
 void loop() {
-    ws->loop();
-
-    // servoHandler->servoSetPosition(pos, "To position");
-    // Serial.println("Break...");
-    // delay(5000);
+    ws->loop(); 
 }
-
 
 void event(WStype_t type, uint8_t* payload, size_t length) {
     std::vector<int> Orientation = {0, 0, 0}; 
@@ -67,12 +50,16 @@ void event(WStype_t type, uint8_t* payload, size_t length) {
                 Serial.println(error.c_str());
                 return;
             }
-
-            JsonArray angles = doc.as<JsonArray>(); 
-            for(int i = 0; i < 3; i++) {
-                Orientation[i] = angles[i]; 
+            
+            if(json[0] != '"') {
+                Serial.print("Received Allowed message:");
+                JsonArray angles = doc.as<JsonArray>(); 
+                Serial.println((char*)payload);
+                for(int i = 0; i < 3; i++) {
+                    Orientation[i] = angles[i]; 
+                }
+                servoHandler->servoSetPosition(Orientation, ""); 
             }
-            servoHandler->servoSetPosition(Orientation, ""); 
             break;
         }
         case WStype_BIN:
@@ -81,21 +68,8 @@ void event(WStype_t type, uint8_t* payload, size_t length) {
     }
 }
 
-
-/** 
-*   General info: 
-*   -------------
-* - Arm 1 i 90 angle = 110 angle    
-* - Arm 2 i 90 angle = 50 angle  
-*/
-=======
-    // servoHandler.test();
-    // Serial.println("Alternate Servo Test");
-}
-
-void loop() {
-    Serial.println("\n\n\n STARTE \n\n\n");
-    servoHandler->robotPickUp();
+    // Serial.println("\n\n\n START \n\n\n");
+    // servoHandler->robotPickUp();
 
 
 
@@ -125,6 +99,3 @@ void loop() {
 
     // delay(100);
     // Serial.println("Stage6");
-
-}
->>>>>>> 83a8446160007dae216aadef968ed2e09104bc7a
