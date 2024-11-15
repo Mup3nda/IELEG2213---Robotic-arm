@@ -1,23 +1,77 @@
 #include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
+#include <Websocket.h>
+#include <ArduinoJson.h>
 #include "ServoHandler.h"
 
-const int defaultPos[5] = {180, 180, 90, 0, 0};
-
-
+/* Servo */
+const int defaultPos[3] = {0, 180, 0};
 ServoHandler* servoHandler = new ServoHandler(defaultPos);
+
+/* Websocket */
+const char* ssid = "ABS-Link";
+const char* password = "ABS_2023";
+const char* server = "192.168.0.178";
+const uint16_t port = 9000; 
+void event(WStype_t type, uint8_t* payload, size_t length);  
+Websocket* ws = new Websocket(ssid, password, server, port);
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("Alternate Servo Test");
+    Serial.println("Setting up...");
     servoHandler->setupServos();
-    // servoHandler.test();
-    // Serial.println("Alternate Servo Test");
+    ws->begin();
+    ws->setCallback(event); 
+    Serial.println("Setup complete!"); 
 }
 
 void loop() {
-    Serial.println("\n\n\n STARTE \n\n\n");
+    ws->loop(); 
+}
+
+void event(WStype_t type, uint8_t* payload, size_t length) {
+    std::vector<int> Orientation = {0, 0, 0}; 
+
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.println("Disconnected!");
+            break;
+        case WStype_CONNECTED:
+            Serial.println("Connected to WebSocket server");
+            break;
+        case WStype_TEXT: {
+            Serial.print("Received message: ");
+            Serial.println((char*)payload);
+            const char* json = (char*)payload; 
+            StaticJsonDocument<200> doc; 
+
+            DeserializationError error = deserializeJson(doc, json); 
+            if(error) {
+                Serial.print(F("deserializeJson() failed: "));
+                Serial.println(error.c_str());
+                return;
+            }
+            
+            if(json[0] != '"') {
+                Serial.print("Received Allowed message:");
+                JsonArray angles = doc.as<JsonArray>(); 
+                Serial.println((char*)payload);
+                for(int i = 0; i < 3; i++) {
+                    Orientation[i] = angles[i]; 
+                }
+                servoHandler->servoSetPosition(Orientation, ""); 
+            }
+            break;
+        }
+        case WStype_BIN:
+            Serial.println("Received binary data");
+            break;
+    }
+}
+
+    // Serial.println("\n\n\n START \n\n\n");
     // servoHandler->robotPickUp();
+
+
 
     // TEST CLAWS
     std::vector<int> open = {180, 180, 90, 90, 90};
@@ -61,5 +115,3 @@ void loop() {
 
     // delay(100);
     // Serial.println("Stage6");
-
-}

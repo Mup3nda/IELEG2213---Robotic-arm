@@ -1,8 +1,6 @@
 #include "ServoHandler.h"
 #include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
 #include <Arduino.h>
-#include <vector>
 
 ServoHandler::ServoHandler(const int defaultpos[]) : 
       servoMinMax{{SERVO_MIN, SERVO_MAX}, {SERVO_MIN, SERVO_MAX}, {SERVO_MIN, SERVO_MAX}} {
@@ -67,7 +65,7 @@ void ServoHandler::robotPickUp(){
 void ServoHandler::setupServos() {
     pwm->begin();
     pwm->setPWMFreq(60);
-    Serial.println("inside of setup");
+    // Serial.println("inside of setup");
     servoSetPosition(this->defaultServoPositions, "");
 }
 
@@ -110,9 +108,9 @@ void ServoHandler::servoJoints(int from, int to, const std::vector<int> &choosen
 void ServoHandler::servoMove(std::vector<int> &stepVector) {
     std::vector<int> newTargetPosition = checkParams(stepVector);
 
-    for(auto &e : stepVector) {
-        Serial.println(e); 
-    }
+    // for(auto &e : stepVector) {
+    //     Serial.println(e); 
+    // }
     
     for (int i = 0; i < SERVOS; i++) {
         // Move the servo one degree toward the target
@@ -134,9 +132,9 @@ void ServoHandler::servoMove(std::vector<int> &stepVector) {
 void ServoHandler::servoMoveModded(std::vector<int> &stepVector) {
     std::vector<int> newTargetPosition = checkParams(stepVector);
 
-    for(auto &e : stepVector) {
-        Serial.println(e); 
-    }
+    // for(auto &e : stepVector) {
+    //     Serial.println(e); 
+    // }
     
     for (int i = 0; i < SERVOS; i++) {
         if (stepVector[i] == 1) {
@@ -166,8 +164,8 @@ void ServoHandler::test() {
 
 int ServoHandler::degreesToPulseWidth(int degrees) {
     int pulse = map(degrees, 0, 180, SERVO_MIN, SERVO_MAX);
-    //Serial.print("Angle: ");Serial.print(degrees);
-    //Serial.print(" pulse: ");Serial.println(pulse);
+    // Serial.print("Angle: ");Serial.print(degrees);
+    // Serial.print(" pulse: ");Serial.println(pulse);
     return pulse;
 }
 
@@ -177,19 +175,19 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
     std::vector<int> stepVector(SERVOS, 0);
     unsigned long currentTime = millis(); 
     
-    Serial.println(debug);
+    // Serial.println(debug);
     // Convert degrees to pulse width
     for (int i = 0; i < SERVOS; i++) {
         pulseWidthPositions[i] = degreesToPulseWidth(wantedPos[i]);
     }
-    Serial.print("pulswidth pos:");
-    for(auto& i: pulseWidthPositions) {
-        Serial.print(i);    Serial.print(" "); 
-    }
-    Serial.println("");
-    Serial.println("Stage7");
+    // Serial.print("pulswidth pos:");
+    // for(auto& i: pulseWidthPositions) {
+    //     Serial.print(i);    Serial.print(" "); 
+    // }
+    // Serial.println("");
+    // Serial.println("Stage7");
 
-    Serial.println("Came here");
+    // Serial.println("Came here");
     while (!allReached) {
         allReached = true;
         
@@ -204,11 +202,11 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
                 stepVector[i] = 0;
             }
         }
-        Serial.print("Steper values: ");
-        for(auto& element : stepVector) {
-            Serial.print(element); Serial.print(" "); 
-        }
-        Serial.println();
+        // Serial.print("Steper values: ");
+        // for(auto& element : stepVector) {
+        //     Serial.print(element); Serial.print(" "); 
+        // }
+        // Serial.println();
 
         servoMove(stepVector); // move towards the goal 
 
