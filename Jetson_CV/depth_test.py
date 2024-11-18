@@ -17,7 +17,7 @@ KNOWN_HEIGHT_OBJECT = 10  # for mouse
 MOUSE_CLASS_ID = 74  # Adjust the class ID as per your need
 
 # Pre-calculate the focal length using a reference image width
-focal_length_found = 2200 #2400  # Pre-measured focal length
+focal_length_found = 2200 #2400  # Pre-measured focal length 2200 eller 2400
 
 def distance_finder(focal_length, known_width_OBJECT, width_in_image):
     return round(((known_width_OBJECT * focal_length) / width_in_image),2)
