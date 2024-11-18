@@ -11,7 +11,8 @@ ServoHandler* servoHandler = new ServoHandler(defaultPos);
 /* Websocket */
 const char* ssid = "ABS-Link";
 const char* password = "ABS_2023";
-const char* server = "192.168.0.178";
+//const char* server = "192.168.0.178"; //ABDI
+const char* server = "192.168.0.135"; //DIDIER
 const uint16_t port = 9000; 
 void event(WStype_t type, uint8_t* payload, size_t length);  
 Websocket* ws = new Websocket(ssid, password, server, port);
@@ -19,27 +20,21 @@ Websocket* ws = new Websocket(ssid, password, server, port);
 void setup() {
     Serial.begin(115200);
     Serial.println("Setting up...");
-    servoHandler->setupServos();
-    // ws->begin();
-    // ws->setCallback(event); 
-    // Serial.println("Setup complete!"); 
+    //servoHandler->setupServos();
+    ws->begin();
+    ws->setCallback(event); 
+    Serial.println("Setup complete!"); 
 }
 
 void loop() {
-    // ws->loop(); 
+    ws->loop(); 
 
-        // TEST CLAWS
-    std::vector<int> open = {180, 180, 90, 180, 180};
-    servoHandler->servoSetPosition(open, "Rotate to object position");
-    delay(500);
-    Serial.println("\n\nREST\n\n");
+    //         // TEST CLAWS
 
     // std::vector<int> close = {180, 180, 90, 90, 90};
     // servoHandler->servoSetPosition(close, "Rotate to object position");
     // delay(500);
     // Serial.println("\n\n270\n\n");
-
-    //         // TEST CLAWS
     // std::vector<int> open2 = {180, 180, 90, 180, 180};
     // servoHandler->servoSetPosition(open2, "Rotate to object position");
     // delay(1000);
