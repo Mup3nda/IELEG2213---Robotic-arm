@@ -10,10 +10,10 @@ display = jetson.utils.videoOutput("display://0")
 font = jetson.utils.cudaFont()
 
 # Constants for distance calculation
-KNOWN_DISTANCE = 36  # centimeter
+KNOWN_DISTANCE = 45  # centimeter
 KNOWN_WIDTH_OBJECT = 6.5  # for mouse
 MOUSE_CLASS_ID = 74  # Adjust the class ID as per your need
-focal_length_found = 2200  # Pre-measured focal length
+focal_length_found = 2400  # Pre-measured focal length
 
 # Moving average configuration
 MAX_MEASUREMENTS = 15  # Number of measurements to average

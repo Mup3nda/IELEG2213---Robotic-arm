@@ -1,10 +1,11 @@
 #include <Wire.h>
-#include <Websocket.h>
+#include "Websocket.h"
 #include <ArduinoJson.h>
 #include "ServoHandler.h"
 
 /* Servo */
-const int defaultPos[3] = {0, 180, 0};
+//const int defaultPos[3] = {0, 180, 0};
+const int defaultPos[5] = {180, 180, 180, 180, 180};
 ServoHandler* servoHandler = new ServoHandler(defaultPos);
 
 /* Websocket */
@@ -19,13 +20,37 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Setting up...");
     servoHandler->setupServos();
-    ws->begin();
-    ws->setCallback(event); 
-    Serial.println("Setup complete!"); 
+    // ws->begin();
+    // ws->setCallback(event); 
+    // Serial.println("Setup complete!"); 
 }
 
 void loop() {
-    ws->loop(); 
+    // ws->loop(); 
+
+        // TEST CLAWS
+    std::vector<int> open = {180, 180, 90, 180, 180};
+    servoHandler->servoSetPosition(open, "Rotate to object position");
+    delay(500);
+    Serial.println("\n\nREST\n\n");
+
+    // std::vector<int> close = {180, 180, 90, 90, 90};
+    // servoHandler->servoSetPosition(close, "Rotate to object position");
+    // delay(500);
+    // Serial.println("\n\n270\n\n");
+
+    //         // TEST CLAWS
+    // std::vector<int> open2 = {180, 180, 90, 180, 180};
+    // servoHandler->servoSetPosition(open2, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\nREST\n\n");
+
+    //         // TEST CLAWS
+    // std::vector<int> open3 = {180, 180, 90, 180, 90};
+    // servoHandler->servoSetPosition(open3, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\n90\n\n");
+
 }
 
 void event(WStype_t type, uint8_t* payload, size_t length) {
@@ -71,29 +96,27 @@ void event(WStype_t type, uint8_t* payload, size_t length) {
     // Serial.println("\n\n\n START \n\n\n");
     // servoHandler->robotPickUp();
 
+    // // TEST CLAWS
+    // std::vector<int> open = {180, 180, 90, 90, 90};
+    // servoHandler->servoSetPosition(open, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\nCounter Clockwise\n\n");
 
+    // std::vector<int> close = {180, 180, 90, 190, 95};
+    // servoHandler->servoSetPosition(close, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\nClockwise\n\n");
 
-    // TEST CLAWS
-    std::vector<int> open = {180, 180, 90, 90, 90};
-    servoHandler->servoSetPosition(open, "Rotate to object position");
-    delay(1000);
-    Serial.println("\n\nCounter Clockwise\n\n");
+    // std::vector<int> stop = {180, 180, 90, 180, 90};
+    // servoHandler->servoSetPosition(stop, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\nCounter Clockwise\n\n");
 
-    std::vector<int> close = {180, 180, 90, 190, 95};
-    servoHandler->servoSetPosition(close, "Rotate to object position");
-    delay(1000);
-    Serial.println("\n\nClockwise\n\n");
-
-    std::vector<int> stop = {180, 180, 90, 180, 90};
-    servoHandler->servoSetPosition(stop, "Rotate to object position");
-    delay(1000);
-    Serial.println("\n\nCounter Clockwise\n\n");
-
-    // TEST CLAWS
-    std::vector<int> back = {180, 180, 90, 10, 85};
-    servoHandler->servoSetPosition(back, "Rotate to object position");
-    delay(1000);
-    Serial.println("\n\nBack\n\n");
+    // // TEST CLAWS
+    // std::vector<int> back = {180, 180, 90, 10, 85};
+    // servoHandler->servoSetPosition(back, "Rotate to object position");
+    // delay(1000);
+    // Serial.println("\n\nBack\n\n");
 
     // std::vector<int> close = {180, 180, 90, 180, 80};
     // servoHandler->servoSetPosition(close, "Rotate to object position");
