@@ -1,8 +1,6 @@
 #include "ServoHandler.h"
 #include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
 #include <Arduino.h>
-#include <vector>
 
 ServoHandler::ServoHandler(const int defaultpos[]) : 
       servoMinMax{{SERVO_MIN, SERVO_MAX}, {SERVO_MIN, SERVO_MAX}, {SERVO_MIN, SERVO_MAX}} {
@@ -10,21 +8,64 @@ ServoHandler::ServoHandler(const int defaultpos[]) :
  
     /* Init servopins and default positions*/
     for(int i = 0; i < SERVOS; i++) {
-        servoPins.push_back(125);  
+        servoPins.push_back(i);  
         defaultServoPositions.push_back(defaultpos[i]);
     }
 
     for (int i = 0; i < SERVOS; i++) {
         servoPositions.push_back(defaultServoPositions[i]);
     }
+
+    currentVector = std::vector<int>(SERVOS, 0); // Initialize currentVector
+    previousVector = std::vector<int>(SERVOS, 0); // Initialize previousVector
 }
+
+void ServoHandler::robotPickUp(){
+    
+    // std::vector<int> restPosition = {180, 180, 180, 90, 120};
+    // servoSetPosition(restPosition, "Rotate to object position");
+    // delay(500);
+
+    std::vector<int> rotateToObject = {90, 180, 180, 90, 180};
+    servoSetPosition(rotateToObject, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> lowerToPick = {90, 80, 160, 180, 180};
+    servoSetPosition(lowerToPick, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> grabObject = {90, 80, 160, 180, 120}; 
+    servoSetPosition(grabObject, "Grabbing the object");
+    delay(1000);
+
+    std::vector<int> pickUpObject = {90, 180, 180, 160, 120};
+    servoSetPosition(pickUpObject, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> rotateToDrope = {140, 180, 180, 90, 120};
+    servoSetPosition(rotateToDrope, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> lowerToDrope = {140, 80, 160, 180, 120};
+    servoSetPosition(lowerToDrope, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> dropTheObject = {140, 80, 160, 180, 180}; //90 for å close
+    servoSetPosition(dropTheObject, "Rotate to object position");
+    delay(500);
+
+    std::vector<int> backUp = {140, 180, 180, 90, 180}; //90 for å close
+    servoSetPosition(backUp, "Rotate to object position");
+    delay(500);
+}
+
+
+
 
 void ServoHandler::setupServos() {
     pwm->begin();
     pwm->setPWMFreq(60);
-    Serial.println("inside of setup");
-    // servoSetPosition(std::vector<int>(std::begin(defaultServoPositions), std::end(defaultServoPositions)));
-    // test();
+    // Serial.println("inside of setup");
     servoSetPosition(this->defaultServoPositions, "");
 }
 
@@ -45,13 +86,31 @@ std::vector<int> ServoHandler::checkParams(std::vector<int> &targetPosition) {
     }
     return newTargetPosition;
 }
+void ServoHandler::servoJoints(int from, int to, const std::vector<int> &choosenServos) {
+    for (int i = 0; i < choosenServos.size(); i++) {
+        int servoIndex = choosenServos[i];
+        std::vector<int> newPosition(SERVOS, 0);
+
+        // Set the current positions for servos that shouldn't be moved
+        for (int j = 0; j < SERVOS; j++) {
+            newPosition[j] = servoPositions[j];
+        }
+
+        // Move the chosen servo from 'from' to 'to'
+        newPosition[servoIndex] = from;
+        servoSetPosition(newPosition, "Moving Servo");
+        newPosition[servoIndex] = to;
+        servoSetPosition(newPosition, "Moving Servo");
+    }
+}
+
 
 void ServoHandler::servoMove(std::vector<int> &stepVector) {
     std::vector<int> newTargetPosition = checkParams(stepVector);
 
-    for(auto &e : stepVector) {
-        Serial.println(e); 
-    }
+    // for(auto &e : stepVector) {
+    //     Serial.println(e); 
+    // }
     
     for (int i = 0; i < SERVOS; i++) {
         // Move the servo one degree toward the target
@@ -67,14 +126,27 @@ void ServoHandler::servoMove(std::vector<int> &stepVector) {
         // Map the new position to PWM pulse width and move the servo
         int pulseWidth = degreesToPulseWidth(servoPositions[i]);
         pwm->setPWM(servoPins[i], 0, pulseWidth);
+    }
+}
 
-        // // Print debug information
-        // Serial.print("Servo "); 
-        // Serial.print(i); 
-        // Serial.print(" moved to angle: "); 
-        // Serial.print(servoPositions[i]);
-        // Serial.print(" -> PWM: ");
-        // Serial.println(pulseWidth);
+void ServoHandler::servoMoveModded(std::vector<int> &stepVector) {
+    std::vector<int> newTargetPosition = checkParams(stepVector);
+
+    // for(auto &e : stepVector) {
+    //     Serial.println(e); 
+    // }
+    
+    for (int i = 0; i < SERVOS; i++) {
+        if (stepVector[i] == 1) {
+            servoPositions[i] += 2;  
+        } else if (stepVector[i] == -1) {
+            servoPositions[i] -= 2;  
+        }
+
+        servoPositions[i] = constrain(servoPositions[i], 0, 180);
+
+        int pulseWidth = degreesToPulseWidth(servoPositions[i]);
+        pwm->setPWM(servoPins[i], 0, pulseWidth);
     }
 }
 
@@ -92,30 +164,30 @@ void ServoHandler::test() {
 
 int ServoHandler::degreesToPulseWidth(int degrees) {
     int pulse = map(degrees, 0, 180, SERVO_MIN, SERVO_MAX);
-    Serial.print("Angle: ");Serial.print(degrees);
-    Serial.print(" pulse: ");Serial.println(pulse);
+    // Serial.print("Angle: ");Serial.print(degrees);
+    // Serial.print(" pulse: ");Serial.println(pulse);
     return pulse;
 }
 
-void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, char debug[] = "") {
+void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* debug) {
     bool allReached = false;
     std::vector<int> pulseWidthPositions(SERVOS, 0);
     std::vector<int> stepVector(SERVOS, 0);
     unsigned long currentTime = millis(); 
     
-    Serial.println(debug);
+    // Serial.println(debug);
     // Convert degrees to pulse width
     for (int i = 0; i < SERVOS; i++) {
         pulseWidthPositions[i] = degreesToPulseWidth(wantedPos[i]);
     }
-    Serial.print("pulswidth pos:");
-    for(auto& i: pulseWidthPositions) {
-        Serial.print(i);    Serial.print(" "); 
-    }
-    Serial.println("");
-    Serial.println("Stage7");
+    // Serial.print("pulswidth pos:");
+    // for(auto& i: pulseWidthPositions) {
+    //     Serial.print(i);    Serial.print(" "); 
+    // }
+    // Serial.println("");
+    // Serial.println("Stage7");
 
-    Serial.println("Came here");
+    // Serial.println("Came here");
     while (!allReached) {
         allReached = true;
         
@@ -130,36 +202,23 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, char debug[] = 
                 stepVector[i] = 0;
             }
         }
-        Serial.print("Steper values: ");
-        for(auto& element : stepVector) {
-            Serial.print(element); Serial.print(" "); 
-        }
-        Serial.println();
-
-        // // Serial.print("Servo Positions: ");
-        // // for(auto& pos : servoPositions) {
-        // //     Serial.print(pos); Serial.print(" ");
-        // // }
+        // Serial.print("Steper values: ");
+        // for(auto& element : stepVector) {
+        //     Serial.print(element); Serial.print(" "); 
+        // }
         // Serial.println();
 
         servoMove(stepVector); // move towards the goal 
-        // // Serial.print("Servo Positions: ");
-        // // for(auto& pos : servoPositions) {
-        // //     Serial.print(pos); Serial.print(" ");
-        // // }
-        // Serial.println();
 
         do{
             currentTime = millis();
-            // Serial.println("waiting...");
         }while(currentTime - previousTime < interval);
         previousTime = currentTime; 
     }
-        
+}
 
-    //         // delay(15); // Optional: Add delay to allow servos to move
-
-    Serial.println("Stage8");
+void ServoHandler::updateCurrentVector(const std::vector<int>& newVector) {
+    currentVector = newVector;
 }
 
 ServoHandler::~ServoHandler() {

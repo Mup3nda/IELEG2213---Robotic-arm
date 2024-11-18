@@ -1,96 +1,101 @@
-// // #include <NimBLEDevice.h>
-
-// // const int LED_PIN_D2 = D2;  // GPIO pin connected to the LED D2
-// // const int LED_PIN_D3 = D3;  // GPIO pin connected to the LED D3
-// // const int LED_PIN_D4 = D4;  // GPIO pin connected to the LED D4
-// // const int LED_PIN_D5 = D5;  // GPIO pin connected to the LED D5
-
-// // NimBLECharacteristic *pCharacteristic;
-
-// // class MyCallbacks: public NimBLECharacteristicCallbacks {
-// //     void onWrite(NimBLECharacteristic* pCharacteristic) {
-// //         std::string rxValue = pCharacteristic->getValue();
-        
-// //         // Print the received value to the serial monitor
-// //         Serial.print("Received value: ");
-// //         Serial.println(rxValue.c_str());
-
-// //         if (rxValue == "D2_toggle") {
-// //             digitalWrite(LED_PIN_D2, !digitalRead(LED_PIN_D2));  // Toggle LED D2
-// //             Serial.println("LED D2 toggled");
-// //         } else if (rxValue == "D3_toggle") {
-// //             digitalWrite(LED_PIN_D3, !digitalRead(LED_PIN_D3));  // Toggle LED D3
-// //             Serial.println("LED D3 toggled");
-// //         } else if (rxValue == "D4_toggle") {
-// //             digitalWrite(LED_PIN_D4, !digitalRead(LED_PIN_D4));  // Toggle LED D4
-// //             Serial.println("LED D4 toggled");
-// //         } else if (rxValue == "D5_toggle") {
-// //             digitalWrite(LED_PIN_D5, !digitalRead(LED_PIN_D5));  // Toggle LED D5
-// //             Serial.println("LED D5 toggled");
-// //         }
-// //     }
-// // };
-
-// void setup() {
-//   Serial.begin(115200);
-// //   pinMode(LED_PIN_D2, OUTPUT);  // Set LED pin D2 as output
-// //   pinMode(LED_PIN_D3, OUTPUT);  // Set LED pin D3 as output
-// //   pinMode(LED_PIN_D4, OUTPUT);  // Set LED pin D4 as output
-// //   pinMode(LED_PIN_D5, OUTPUT);  // Set LED pin D5 as output
-
-// //   NimBLEDevice::init("ESP32_LED_Control");
-
-// //   NimBLEServer *pServer = NimBLEDevice::createServer();
-// //   NimBLEService *pService = pServer->createService("12345678-1234-1234-1234-123456789abc");
-
-// //   pCharacteristic = pService->createCharacteristic(
-// //                       "87654321-4321-4321-4321-abc123456789",
-// //                       NIMBLE_PROPERTY::WRITE
-// //                     );
-  
-// //   pCharacteristic->setCallbacks(new MyCallbacks());
-
-// //   pService->start();
-
-// //   NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
-// //   pAdvertising->addServiceUUID("12345678-1234-1234-1234-123456789abc");
-// //   pAdvertising->start();
-
-// //   Serial.println("Waiting for a BLE client to connect...");
-// }
-
-// void loop() {
-//   // Nothing to do here, everything is handled in the callback
-// }
-
-
-
-
+#include <Wire.h>
 #include <Websocket.h>
+#include <ArduinoJson.h>
+#include "ServoHandler.h"
 
-// Replace with your network credentials
+/* Servo */
+const int defaultPos[3] = {0, 180, 0};
+ServoHandler* servoHandler = new ServoHandler(defaultPos);
+
+/* Websocket */
 const char* ssid = "ABS-Link";
 const char* password = "ABS_2023";
-
-// WebSocket server details
 const char* server = "192.168.0.178";
-const uint16_t port = 9000; // Replace with your server port
-
-Websocket* ws = new Websocket(ssid, password, server, port);  
+const uint16_t port = 9000; 
+void event(WStype_t type, uint8_t* payload, size_t length);  
+Websocket* ws = new Websocket(ssid, password, server, port);
 
 void setup() {
     Serial.begin(115200);
+    Serial.println("Setting up...");
+    servoHandler->setupServos();
     ws->begin();
+    ws->setCallback(event); 
+    Serial.println("Setup complete!"); 
 }
 
 void loop() {
-    // Keep the connection alive
-    ws->loop();
-
-    // unsigned long currentMillis = millis();
-    // if (currentMillis - previousMillis >= interval) {
-    //     previousMillis = currentMillis;
-    //     Serial.println("Sending message to server...");
-    //     webSocket.sendTXT("Hello from Arduino!");
-    // }
+    ws->loop(); 
 }
+
+void event(WStype_t type, uint8_t* payload, size_t length) {
+    std::vector<int> Orientation = {0, 0, 0}; 
+
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.println("Disconnected!");
+            break;
+        case WStype_CONNECTED:
+            Serial.println("Connected to WebSocket server");
+            break;
+        case WStype_TEXT: {
+            Serial.print("Received message: ");
+            Serial.println((char*)payload);
+            const char* json = (char*)payload; 
+            StaticJsonDocument<200> doc; 
+
+            DeserializationError error = deserializeJson(doc, json); 
+            if(error) {
+                Serial.print(F("deserializeJson() failed: "));
+                Serial.println(error.c_str());
+                return;
+            }
+            
+            if(json[0] != '"') {
+                Serial.print("Received Allowed message:");
+                JsonArray angles = doc.as<JsonArray>(); 
+                Serial.println((char*)payload);
+                for(int i = 0; i < 3; i++) {
+                    Orientation[i] = angles[i]; 
+                }
+                servoHandler->servoSetPosition(Orientation, ""); 
+            }
+            break;
+        }
+        case WStype_BIN:
+            Serial.println("Received binary data");
+            break;
+    }
+}
+
+    // Serial.println("\n\n\n START \n\n\n");
+    // servoHandler->robotPickUp();
+
+
+
+    // // TEST CLAWS
+    // std::vector<int> open = {180, 180, 180, 90, 180};
+    // servoHandler->servoSetPosition(open, "Rotate to object position");
+    // delay(500);
+
+    // std::vector<int> close = {180, 180, 180, 90, 90};
+    // servoHandler->servoSetPosition(close, "Rotate to object position");
+    // delay(500);
+
+
+
+    // Move servos to maximum positions
+    // Serial.println("\nStage1");
+    // servoHandler.servoSetPosition(positionsToMax);
+    // Serial.println("Stage2");
+    // delay(5000);
+    // Serial.println("Stage3");
+
+    // // Move servos back to minimum positions
+    // Serial.println("Stage4");
+
+    // servoHandler.servoSetPosition(positionsToMin);
+    // Serial.println("Stage5");
+
+    // delay(100);
+    // Serial.println("Stage6");
