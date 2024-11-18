@@ -11,7 +11,7 @@ async def handler(websocket, path):
         async for message in websocket:
             print(f"Received message: {message}")
             print(message[-1])
-            # Send the message to all connected clients (including Arduino)
+
             for client in connected_clients:
                 await client.send(message)
     except websockets.exceptions.ConnectionClosed:
