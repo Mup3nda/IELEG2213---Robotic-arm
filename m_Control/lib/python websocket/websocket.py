@@ -21,8 +21,8 @@ async def handler(websocket, path):
         connected_clients.remove(websocket)
 
 async def main():
-    #async with websockets.serve(handler, "192.168.0.135", 9000) as server: #Didier ABS
-    async with websockets.serve(handler, "192.168.0.178", 9000) as server: #Abdi
+    async with websockets.serve(handler, "192.168.0.135", 9000) as server: #Didier ABS
+    #async with websockets.serve(handler, "192.168.0.178", 9000) as server: #Abdi
         print("WebSocket server started on port 9000")
         await asyncio.get_running_loop().create_future()
 
