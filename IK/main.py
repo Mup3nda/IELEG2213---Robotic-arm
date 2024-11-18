@@ -166,6 +166,7 @@ goal = np.array([10, 10, 30])
 print(f"total length: {np.linalg.norm(goal)}")
 
 ik = IKHandler(O)
-asyncio.run(ik.getCVdata("ws://192.168.0.178:9000"))
-# ik.IK(goal)
-# asyncio.run(ik.showPlot(goal))
+# asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) #ABDI
+# asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) #DIDIER
+ik.IK(goal)
+asyncio.run(ik.showPlot(goal))
