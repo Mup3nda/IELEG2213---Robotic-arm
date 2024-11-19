@@ -3,8 +3,8 @@ import websockets
 import random
 
 async def send_coordinates():
-    #uri = "ws://10.22.75.29:8765"  # Didier
-    uri = "ws://192.168.0.135:9000" # ABS
+    uri = "ws://192.168.0.135:8765"  # Didier
+    #uri = "ws://192.168.0.135:9000" # ABS
     async with websockets.connect(uri) as websocket:
         while True:
             # x = random.randint(0, 100)

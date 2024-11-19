@@ -9,9 +9,9 @@ import time
 class IKHandler: 
     def __init__(self, O):
         self.O = O
-        self.x = None
-        self.y = None
-        self.z = None
+        self.x = 0
+        self.y = 0
+        self.z = 0
     
     async def getCVdata(self, uri = "ws://192.168.0.135:9000"):
         async with websockets.connect(uri) as websocket:
@@ -28,7 +28,6 @@ class IKHandler:
                     self.y = int(y_str)
                     self.z = int(z_str)
                     print(f"Received coordinates: x={self.x}, y={self.y}, z={self.z}")
-
                     goal_pos = np.array([self.x, self.y, self.z-45])
                     self.IK(goal_pos)
                     await self.showPlot(goal_pos)
@@ -36,10 +35,7 @@ class IKHandler:
                 except ValueError:
                     print(f"Received invalid data: {data}")
 
-                # Optional: Add a short delay if needed
-                await asyncio.sleep(0.1)
-
-    def FK(self, section=1):
+    def FK(self, section=2):
         x, y, z = 0, 0, 0
         for lim in range(section + 1):
             if lim == 0: 
@@ -50,6 +46,10 @@ class IKHandler:
                 x += FOREARM_LENGHT * np.cos(self.O[0]) * np.sin(self.O[2] + self.O[1]) # kinda løsning?
                 y += FOREARM_LENGHT * np.sin(self.O[0]) * np.sin(self.O[2] + self.O[1])
                 z += FOREARM_LENGHT * np.cos(self.O[2] + self.O[1])
+            elif lim == 2:   
+                x += GRIPPER * np.cos(self.O[0]) * np.sin(self.O[3] + self.O[2] + self.O[1]) # kinda løsning?
+                y += GRIPPER * np.sin(self.O[0]) * np.sin(self.O[3] + self.O[2] + self.O[1])
+                z += GRIPPER * np.cos(self.O[3] + self.O[2] + self.O[1])
 
         return np.array([x, y, z + BASE_HEIGHT])
 
@@ -119,12 +119,14 @@ class IKHandler:
         zRotation = np.array([0, 0, 1])  
         polarArmAxis = np.array([-np.sin(self.O[0]), np.cos(self.O[0]), 0]) 
         polarForearmAxis = polarArmAxis  
+        polarGripper = polarArmAxis
         
         J_A = np.cross(zRotation, endPos - startPos)  
         J_B = np.cross(polarArmAxis, endPos - startPos)  
         J_C = np.cross(polarForearmAxis, endPos - self.FK(0))  
+        J_D = np.cross(polarGripper, endPos - self.FK(1))
         
-        J = np.vstack((J_A, J_B, J_C))
+        J = np.vstack((J_A, J_B, J_C, J_D))
         #print(f"J_A: {J_A} og J: {J}")
         return J # if you don't transpose then check comment
 
@@ -142,30 +144,37 @@ class IKHandler:
         ax = fig.add_subplot(111, projection='3d')
         
         startPos = self.FK(0)
+        armPos = self.FK(1)
         endPos = self.FK()
 
         ax.plot(targetPos[0], targetPos[1], targetPos[2], "ro-")
         ax.plot([0, 0], [0, 0], [0, 10], "ro-")
         ax.plot([0, startPos[0]], [0, startPos[1]], [10, startPos[2]], "go-")
-        ax.plot([startPos[0], endPos[0]], [startPos[1], endPos[1]], [startPos[2], endPos[2]], "bo-")
+        ax.plot([startPos[0], armPos[0]], [startPos[1], armPos[1]], [startPos[2], armPos[2]], "bo-")
+        ax.plot([armPos[0], endPos[0]], [armPos[1], endPos[1]], [armPos[2], endPos[2]], "yo-")
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
         self.setAspectRatio(ax)
         print(f"Endposition: x: {endPos[0]}, y: {endPos[1]}, z: {endPos[2]}")
-        await self.send("ws://192.168.0.178:9000", targetPos)
+        await self.send("ws://192.168.0.135:9000", targetPos)
+        # await self.send("ws://192.168.0.178:9000", targetPos)
         plt.show()
         
         # Reset position
-        await asyncio.sleep(2)
-        self.O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(0.0)])
-        await self.send("ws://192.168.0.178:9000", targetPos)
+        # await asyncio.sleep(2)
+        #self.O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(90.0), np.deg2rad(0.0)])
+        goal = np.array([30, 5, 1])
+        self.IK(goal)
+        # await self.send("ws://192.168.0.178:9000", goal)
+        await self.send("ws://192.168.0.135:9000", goal)
     
     async def send(self, ws, targetPos): 
         convertedO = self.O.copy()  
 
         convertedO[1] = np.pi - convertedO[1]
+        convertedO[3] = np.pi - convertedO[3]
         convertedO_deg = np.rad2deg(convertedO) 
         convertedO_deg = np.clip(convertedO_deg, 0, 180).astype(int)
 

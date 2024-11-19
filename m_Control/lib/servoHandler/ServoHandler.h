@@ -14,7 +14,8 @@ public:
     void servoMoveModded(std::vector<int> &stepVector);
     void servoSetPosition(std::vector<int> &wantedPos, const char* debug);
     void updateCurrentVector(const std::vector<int>& newVector);
-    void servoJoints(int from, int to, const std::vector<int> &choosenServos); 
+    void servoJoints(int from, int to, const std::vector<int> &choosenServos);
+    std::vector<int> getServoPostions(); 
     void test(); 
    
 

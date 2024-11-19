@@ -175,8 +175,10 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
     std::vector<int> stepVector(SERVOS, 0);
     unsigned long currentTime = millis(); 
     
-    // Serial.println(debug);
+    Serial.println(debug);
     // Convert degrees to pulse width
+    Serial.print("wanted gripper angle: "); 
+    Serial.println(wantedPos[4]); 
     for (int i = 0; i < SERVOS; i++) {
         pulseWidthPositions[i] = degreesToPulseWidth(wantedPos[i]);
     }
@@ -219,6 +221,10 @@ void ServoHandler::servoSetPosition(std::vector<int> &wantedPos, const char* deb
 
 void ServoHandler::updateCurrentVector(const std::vector<int>& newVector) {
     currentVector = newVector;
+}
+
+std::vector<int> ServoHandler::getServoPostions() {
+    return currentVector; 
 }
 
 ServoHandler::~ServoHandler() {
