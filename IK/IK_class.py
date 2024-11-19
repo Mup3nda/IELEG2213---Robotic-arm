@@ -158,17 +158,17 @@ class IKHandler:
         ax.set_zlabel('Z')
         self.setAspectRatio(ax)
         print(f"Endposition: x: {endPos[0]}, y: {endPos[1]}, z: {endPos[2]}")
-        await self.send("ws://192.168.0.135:9000", targetPos)
-        # await self.send("ws://192.168.0.178:9000", targetPos)
+        #await self.send("ws://192.168.0.135:9000", targetPos)
+        await self.send("ws://192.168.0.178:9000", targetPos)
         plt.show()
         
         # Reset position
         # await asyncio.sleep(2)
         #self.O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(90.0), np.deg2rad(0.0)])
-        goal = np.array([30, 5, 1])
-        self.IK(goal)
-        # await self.send("ws://192.168.0.178:9000", goal)
-        await self.send("ws://192.168.0.135:9000", goal)
+        # goal = np.array([30, 5, 1])
+        # self.IK(goal)
+        # # await self.send("ws://192.168.0.178:9000", goal)
+        # await self.send("ws://192.168.0.135:9000", goal)
     
     async def send(self, ws, targetPos): 
         convertedO = self.O.copy()  

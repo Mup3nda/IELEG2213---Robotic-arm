@@ -11,8 +11,8 @@ ServoHandler* servoHandler = new ServoHandler(defaultPos);
 /* Websocket */
 const char* ssid = "ABS-Link";
 const char* password = "ABS_2023";
-//const char* server = "192.168.0.178"; //ABDI
-const char* server = "192.168.0.135"; //DIDIER
+const char* server = "192.168.0.178"; //ABDI
+//const char* server = "192.168.0.135"; //DIDIER
 const uint16_t port = 9000; 
 void event(WStype_t type, uint8_t* payload, size_t length);  
 Websocket* ws = new Websocket(ssid, password, server, port);
@@ -60,7 +60,7 @@ void event(WStype_t type, uint8_t* payload, size_t length) {
 // Ensure all vectors are properly initialized
     std::vector<int> Orientation = {0, 0, 0, 0, 90}; 
     std::vector<int> home = {defaultPos[0], defaultPos[1], defaultPos[2], defaultPos[3], 180}; 
-    std::vector<int> dropGoal = {0, 130, 70, 120, 90}; 
+    std::vector<int> dropGoal = {0, 130, 50, 130, 90}; 
     // std::vector<int> dropGoal = {0, 90, 130, 90, 90}; 
 
 

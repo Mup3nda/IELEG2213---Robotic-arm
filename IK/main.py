@@ -168,7 +168,7 @@ goal = np.array([30, 10, 5]) # x, y, z
 print(f"total length: {np.linalg.norm(goal)}")
 
 ik = IKHandler(O)
-asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) # camera 
+# asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) # camera 
 # ik.IK(goal) # manuelt
 # asyncio.run(ik.showPlot(goal)) # manuelt 
 #
