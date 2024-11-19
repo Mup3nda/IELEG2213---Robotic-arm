@@ -6,7 +6,6 @@
 /* Servo */
 const int defaultPos[5] = {0, 180, 90, 180, 180};
 //const int defaultPos[3] = {0, 180, 0};
-const int defaultPos[5] = {180, 180, 180, 180, 180};
 ServoHandler* servoHandler = new ServoHandler(defaultPos);
 
 /* Websocket */
@@ -21,7 +20,7 @@ Websocket* ws = new Websocket(ssid, password, server, port);
 void setup() {
     Serial.begin(115200);
     Serial.println("Setting up...");
-    //servoHandler->setupServos();
+    servoHandler->setupServos();
     ws->begin();
     ws->setCallback(event); 
     Serial.println("Setup complete!"); 
@@ -58,9 +57,12 @@ void loop() {
 }
 
 void event(WStype_t type, uint8_t* payload, size_t length) {
+// Ensure all vectors are properly initialized
     std::vector<int> Orientation = {0, 0, 0, 0, 90}; 
-    std::vector<int> home = {defaultPos[0], defaultPos[1], defaultPos[2], 90};
-     std::vector<int> currentPostions; 
+    std::vector<int> home = {defaultPos[0], defaultPos[1], defaultPos[2], defaultPos[3], 180}; 
+    std::vector<int> dropGoal = {0, 130, 70, 120, 90}; 
+    // std::vector<int> dropGoal = {0, 90, 130, 90, 90}; 
+
 
     switch(type) {
         case WStype_DISCONNECTED:
@@ -89,26 +91,45 @@ void event(WStype_t type, uint8_t* payload, size_t length) {
                 for(int i = 0; i < 4; i++) {
                     Orientation[i] = angles[i]; 
                 }
-                for(auto &pos : servoHandler->getServoPostions()) {
-                    currentPostions.push_back(pos); 
+                // Ensure the gripper is open
+                Orientation[4] = 180;
+                Serial.print("Wanted gripper angle: ");
+                Serial.println(Orientation[4]);
+                servoHandler->servoSetPosition(Orientation, "Moving to goal");
+                delay(1000);
+                Serial.print("Current Orientation: ");
+                for (auto value : Orientation) {
+                    Serial.print(value);
+                    Serial.print(" ");
                 }
+                Serial.println();
 
-                if(Orientation[4] == currentPostions[4]) { // if its gripping something 
-                    servoHandler->servoSetPosition(home, "going towards home"); 
-                    servoHandler->servoSetPosition(Orientation, "Moving towards the drop point");
-                    delay(500); 
-                    Orientation[4] = 180; 
-                    servoHandler->servoSetPosition(Orientation, "Dropping");
-                    delay(500); 
-                    home[4] = defaultPos[4]; 
-                    servoHandler->servoSetPosition(home, "back to home"); 
-                } else {
-                    servoHandler->servoSetPosition(Orientation, "Moving towards goal"); 
-                    servoHandler->updateCurrentVector(Orientation); 
-                }
-                // delay(500);
-                // Orientation[4] = 90; 
-                // servoHandler->servoSetPosition(Orientation, "Closing");
+                // Close the gripper to grip the object
+                delay(1000);
+                Orientation[4] = 90;
+                servoHandler->servoSetPosition(Orientation, "Gripping object");
+                delay(1000);
+
+                // Move to home position
+                home[4] = 90; // Ensure gripper stays closed
+                servoHandler->servoSetPosition(home, "Returning to home position");
+                delay(1000);
+
+                // Move to drop position
+                dropGoal[4] = 90;
+                servoHandler->servoSetPosition(dropGoal, "Moving to drop position");
+                delay(1000);
+
+                // Open the gripper to drop the object
+                dropGoal[4] = 180;
+                servoHandler->servoSetPosition(dropGoal, "Dropping object");
+                delay(1000);
+
+                // Return to home position
+                home[4] = 180;
+                Serial.println("Returning to home position...");
+                servoHandler->servoSetPosition(home, "Returning to home position");
+                delay(1000);
             }
             break;
         }
