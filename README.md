@@ -1,7 +1,8 @@
 # Robotic Arm with Object Detection
-## System Overview
+
 This project is a robotic arm platform designed for both manual and autonomous operation. The system integrates computer vision, kinematic control, and wireless communication to enable advanced manipulation tasks.
 
+![gif pick-place](./Images/pick_and_place.gif)
 ---
 
 ### System Setup Example
