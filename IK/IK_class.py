@@ -37,20 +37,14 @@ class IKHandler:
 
     def FK(self, section=2):
         x, y, z = 0, 0, 0
-        for lim in range(section + 1):
-            if lim == 0: 
-                x += ARM_LENGHT * np.cos(self.O[0]) * np.sin(self.O[1])
-                y += ARM_LENGHT * np.sin(self.O[0]) * np.sin(self.O[1])
-                z += ARM_LENGHT * np.cos(self.O[1])
-            elif lim == 1:   
-                x += FOREARM_LENGHT * np.cos(self.O[0]) * np.sin(self.O[2] + self.O[1]) # kinda løsning?
-                y += FOREARM_LENGHT * np.sin(self.O[0]) * np.sin(self.O[2] + self.O[1])
-                z += FOREARM_LENGHT * np.cos(self.O[2] + self.O[1])
-            elif lim == 2:   
-                x += GRIPPER * np.cos(self.O[0]) * np.sin(self.O[3] + self.O[2] + self.O[1]) # kinda løsning?
-                y += GRIPPER * np.sin(self.O[0]) * np.sin(self.O[3] + self.O[2] + self.O[1])
-                z += GRIPPER * np.cos(self.O[3] + self.O[2] + self.O[1])
+        lengths = [ARM_LENGHT, FOREARM_LENGHT, GRIPPER]
+        angles = 0
 
+        for i in range(min(section+1, len(lengths))): 
+            angles += self.O[i + 1] if i > 0 else self.O[1]
+            x += lengths[i] * np.cos(self.O[0]) * np.sin(angles)
+            y += lengths[i] * np.sin(self.O[0]) * np.sin(angles)
+            z += lengths[i] * np.cos(angles)
         return np.array([x, y, z + BASE_HEIGHT])
 
 
@@ -66,6 +60,8 @@ class IKHandler:
         iteration = 0
         max_step = np.deg2rad(5)  # Limit max step size to 5 degrees
         epsilon = 1e-6  # Small buffer to avoid exact 0 or pi
+
+        start_time = time.time()
         
         while np.linalg.norm(endEffectorPos - targetPos) > 0.5 and iteration < max_iterations:
             dO = self.getDeltaOrientation(targetPos)
@@ -75,7 +71,6 @@ class IKHandler:
                 step = dO * 0.01 / norm_dO
             else:
                 step = dO * 0.01
-            
             step = np.clip(step, -max_step, max_step)  # Limit the step size
             
             # Update the orientation with the step
@@ -97,11 +92,11 @@ class IKHandler:
                 continue
 
             iteration += 1
-    
+        end_time = time.time()
         if iteration >= max_iterations:
             print("Max iterations reached, solution may not have converged.")
         print(f"The result angle is {np.rad2deg(self.O[0])}, {np.rad2deg(self.O[1])}, {np.rad2deg(self.O[2])}")
-
+        print(f"it took around: {end_time - start_time}")
     def getDeltaOrientation(self, targetPos): 
         Jt = self.getJacobianTranspose()
         # if you don't transpose the getJacobiantanspose 
@@ -110,8 +105,7 @@ class IKHandler:
         V = targetPos - endEffectorPos
         dO = Jt @ V 
         return dO
-    
-# TODO finding the correct answer? 
+
     def getJacobianTranspose(self):
         startPos = np.array([0, 0, 0])  # Base is at the origin
         endPos = self.FK()  # End effector position
@@ -127,7 +121,6 @@ class IKHandler:
         J_D = np.cross(polarGripper, endPos - self.FK(1))
         
         J = np.vstack((J_A, J_B, J_C, J_D))
-        #print(f"J_A: {J_A} og J: {J}")
         return J # if you don't transpose then check comment
 
     def setAspectRatio(self, ax):
@@ -139,7 +132,7 @@ class IKHandler:
         ax.set_ylim3d([centers[1] - max_range, centers[1] + max_range])
         ax.set_zlim3d([centers[2] - max_range, centers[2] + max_range])
     
-    async def showPlot(self, targetPos): 
+    def showPlot(self, targetPos): 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         
@@ -158,19 +151,12 @@ class IKHandler:
         ax.set_zlabel('Z')
         self.setAspectRatio(ax)
         print(f"Endposition: x: {endPos[0]}, y: {endPos[1]}, z: {endPos[2]}")
-        await self.send("ws://192.168.0.178:9000", targetPos)
+        #await self.send("ws://192.168.0.135:9000", targetPos)
+        #await self.send("ws://192.168.0.178:9000", targetPos)
         plt.show()
-        
-        # Reset position
-        # await asyncio.sleep(2)
-        #self.O = np.array([np.deg2rad(0.0), np.deg2rad(0.0), np.deg2rad(90.0), np.deg2rad(0.0)])
-        goal = np.array([30, 5, 5])
-        self.IK(goal)
-        await self.send("ws://192.168.0.178:9000", goal)
     
     async def send(self, ws, targetPos): 
         convertedO = self.O.copy()  
-
         convertedO[1] = np.pi - convertedO[1]
         convertedO[3] = np.pi - convertedO[3]
         convertedO_deg = np.rad2deg(convertedO) 

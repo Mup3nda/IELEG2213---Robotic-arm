@@ -1,4 +1,4 @@
-# from functions import *
+# from functions import 
 # import matplotlib.pyplot as plt
 # from matplotlib.widgets import Slider
 # from mpl_toolkits.mplot3d import Axes3D
@@ -7,7 +7,6 @@ from IK_class import IKHandler
 import asyncio
 import numpy as np
 # import websockets
-
 
 ##################################################
 #                   2D arm
@@ -164,11 +163,12 @@ import numpy as np
 
 O = np.array([np.deg2rad(90.0), np.deg2rad(0.0),
              np.deg2rad(90.0), np.deg2rad(90.0)])
-goal = np.array([30, 10, 5]) # x, y, z
+goal = np.array([0, 0, 70]) # x, y, z
 print(f"total length: {np.linalg.norm(goal)}")
 
 ik = IKHandler(O)
-asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) # camera 
 # ik.IK(goal) # manuelt
 # asyncio.run(ik.showPlot(goal)) # manuelt 
-#
+
+#asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) #ABDI
+# asyncio.run(ik.getCVdata("ws://192.168.0.178:9000")) #DIDIER
