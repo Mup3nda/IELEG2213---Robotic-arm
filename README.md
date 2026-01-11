@@ -21,7 +21,7 @@ The project files are organized into three main folders, each representing a cor
 - `m_Control (Microcontroller and server)`: Includes files for ESP32 firmware, servo control, manual control (e.g., PS5 controller integration), and websocket-based communication between components.
 
 ---
-### Hardware Components
+### System Overview
 ![System Architecture Diagram](./Images/System_Overview.jpg)
 *Figure 2: System architecture illustrating the connections between Jetson Nano, ESP32, PS5 controller, camera, and robotic arm.*
 
