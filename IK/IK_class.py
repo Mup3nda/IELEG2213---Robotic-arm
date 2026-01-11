@@ -13,6 +13,7 @@ class IKHandler:
         self.y = 0
         self.z = 0
     
+    #async def getCVdata(self, uri = "ws://192.168.0.178:9000"):
     async def getCVdata(self, uri = "ws://192.168.0.135:9000"):
         async with websockets.connect(uri) as websocket:
             print("Connected to WebSocket server for receiving coordinates.")

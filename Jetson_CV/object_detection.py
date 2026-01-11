@@ -44,7 +44,7 @@ async def send_data():
         while True:
             # Capture the image from the camera
             img = camera.Capture()
-            
+        
             # Detect objects in the image
             detections = net.Detect(img)
             
@@ -53,17 +53,18 @@ async def send_data():
                     # Get the center and width of the detected object
                     center_x = int(detection.Center[0])
                     center_y = int(detection.Center[1])
-                    width_object_cm = detection.Width / KNOWN_WIDTH_OBJECT  # Width of the detected object
-                    width_object_pixels = detection.Width
 
+                    width_object_pixels = detection.Width
+                    scaling_factor = width_object_pixels / KNOWN_WIDTH_OBJECT  # Width of the detected object
+                    
                     # Invert the x-coordinate to start from the top-right
                     img_width = img.width  # Get the image width
                     inverted_x = img_width - center_x
 
                     
                     # Convert x and y coordinates from pixels to cm without decimals
-                    x_cm = round(inverted_x / width_object_cm)
-                    y_cm = round(center_y / width_object_cm)
+                    x_cm = round(inverted_x / scaling_factor)
+                    y_cm = round(center_y / scaling_factor)
                     
                     # Calculate the distance without decimals
                     distance = distance_finder(focal_length_found, KNOWN_WIDTH_OBJECT, width_object_pixels)
